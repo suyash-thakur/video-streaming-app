@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Video Stream</title>
+  </head>
+  <body>
+    <video id="video-player" src="./video.mp4" controls></video>
+
+    <script>
+      const videoPlayer = document.getElementById('video-player');
+      const mediaSource = new MediaSource();
+      videoPlayer.src = URL.createObjectURL(mediaSource);
+
+      const chunkSize = 5 * 1024 * 1024; // 1MB chunks
+      let start = 0;
+      let end = start + chunkSize - 1;
+      let fileSize = 0;
+      let loading = false;
+      let sourceBuffer = null;
+
+      mediaSource.addEventListener('sourceopen', function () {
+        sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+        loadNextChunk();
+      });
+
+      async function loadNextChunk() {
+        if (loading) {
+          return;
+        }
+
+        loading = true;
+
+        const response = await fetch('/video', {
+          headers: {
+            Range: `bytes=${start}-${end}`,
+          },
+        });
+
+        if (response.status === 206 || response.status === 200) {
+          const arrayBuffer = await response.arrayBuffer();
+          sourceBuffer.appendBuffer(arrayBuffer);
+
+          if (!fileSize) {
+            const contentRange = response.headers.get('Content-Range');
+            if (contentRange) {
+              fileSize = parseInt(contentRange.split('/')[1]);
+            }
+          }
+          start = end + 1;
+          end = start + chunkSize - 1;
+          if (end >= fileSize) {
+            end = fileSize - 1;
+          }
+        }
+        loading = false;
+      }
+      videoPlayer.addEventListener('timeupdate', async function () {
+        console.log('timeupdate', videoPlayer);
+        const currentTime = videoPlayer.currentTime;
+        const remainingTime = videoPlayer.duration - currentTime;
+        if (remainingTime < chunkSize && start < fileSize) {
+          await loadNextChunk();
+        }
+      });
+    </script>
+  </body>
+</html>
