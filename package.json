@@ -1,15 +1,29 @@
 {
   "name": "video-stream",
   "version": "1.0.0",
-  "description": "",
+  "description": "A video streaming server using Node.js, Express, and CORS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "jest --coverage",
+    "pre-commit": "./.husky/pre-commit",
+    "prepare": "chmod +x .husky/_/pre-commit.sh && husky install"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Suyash Thakur",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "express": "^4.17.1",
+    "supertest": "^6.3.3"
+  },
+  "devDependencies": {
+    "husky": "^8.0.0",
+    "jest": "^29.4.3",
+    "nodemon": "^2.0.15"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run pre-commit"
+    }
   }
 }

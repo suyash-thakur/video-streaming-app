@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running pre-commit hook"
+
+# Run the tests
+npm test
+
+# Check the exit code of the test command
+if [ $? -ne 0 ]; then
+  echo "Pre-commit tests failed, commit aborted."
+  exit 1
+fi
+
+# If tests pass, continue with commit
+echo "Pre-commit tests passed, committing..."
+exit 0
